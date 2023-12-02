@@ -14,7 +14,9 @@ Hexagonal Architecture emphasizes a clear separation of concerns, creating softw
 
 ### Hexagonal Architecture Schema
 
-![Hexagonal Architecture Schema](data/schema.png)
+
+![Alt text](data/svg/schema.svg)
+<img src=".data/svg/schema.svg">
 
 #### Core Principles
 
