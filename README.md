@@ -16,7 +16,6 @@ Hexagonal Architecture emphasizes a clear separation of concerns, creating softw
 
 
 ![Alt text](data/svg/schema.svg)
-<img src=".data/svg/schema.svg">
 
 #### Core Principles
 
@@ -54,6 +53,28 @@ GoLang's simplicity and flexibility align well with Hexagonal Architecture. The 
 ### Conclusion
 
 Hexagonal Architecture offers a structured approach to building software systems, promoting maintainability, testability, and flexibility. Leveraging this architecture in GoLang facilitates modular, adaptable, and maintainable codebases, aligning with the language's principles.
+
+# Project Structure Overview
+
+## Directory Structure
+
+- `/cmd`: Contains the main entry point for your application. Each service or component could have its own subdirectory here.
+
+- `/internal`: Holds the internal packages of the application.
+  - `/driving` : Driving actors of the architecture like user, external app etc
+    - `/adapters`: Contains adapters for external systems or frameworks.
+        - `/http`: Adapter handling incoming HTTP requests.
+    - `/usecases`: Contains implementations of use cases that orchestrate the business logic.
+  - `/driven` : Driven actors of the architecture like user, external app etc
+    - `/adapters`: Contains adapters for external systems or frameworks.
+        - `/database`: Adapter interacting with the database.
+        - `/http`: Adapter handling incoming HTTP requests.
+    - `/usecases`: Contains implementations of use cases that orchestrate the business logic.
+  - `/domain`: Contains the core business logic and domain model.
+    - `/model`: Contains domain models or entities.
+    - `your_domain.go`: Defines interfaces (ports) that interact with the domain.
+  
+- `/test`: Houses all test-related files.
 
 
 ## Overview
