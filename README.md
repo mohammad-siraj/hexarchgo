@@ -58,6 +58,8 @@ Hexagonal Architecture offers a structured approach to building software systems
 
 ## Directory Structure
 
+- `/libs`: Contains the libarries implementaion for many common components being used in the project.
+
 - `/cmd`: Contains the main entry point for your application. Each service or component could have its own subdirectory here.
 
 - `/internal`: Holds the internal packages of the application.
