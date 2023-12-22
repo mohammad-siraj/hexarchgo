@@ -26,6 +26,11 @@ func NewlogConfigOptions(isProduction bool, opts ...IConfigOptionsFunction) Icon
 
 	config := &configs{
 		isProduction: isProduction,
+		maxSize:      1024,
+		maxBackups:   30,
+		maxAge:       90,
+		localTime:    true,
+		compress:     true,
 	}
 
 	for _, operation := range opts {
