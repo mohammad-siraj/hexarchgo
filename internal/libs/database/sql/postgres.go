@@ -30,19 +30,19 @@ func (d *database) Stop() error {
 	return err
 }
 
-func (d *database) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) error {
+func (d *database) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error) {
 	rows, err := d.conn.QueryContext(ctx, queryString)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if len(opt) == 0 {
-		return nil
+		return "", nil
 	}
 	err = rows.Scan(opt[0])
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return "OK", nil
 }
 
 func (d *database) Transaction(ctx context.Context) (dbInterface.ITransaction, error) {
@@ -55,19 +55,19 @@ func (d *database) Transaction(ctx context.Context) (dbInterface.ITransaction, e
 	}, nil
 }
 
-func (t *transaction) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) error {
+func (t *transaction) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error) {
 	rows, err := t.txn.QueryContext(ctx, queryString)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if len(opt) == 0 {
-		return nil
+		return "", nil
 	}
 	err = rows.Scan(opt[0])
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return "OK", nil
 }
 
 func (t *transaction) Commit() error {
