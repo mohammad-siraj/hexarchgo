@@ -128,12 +128,20 @@ To get started with this project:
     go run main.go
     ```
 
-## Usage
+## Pending Functionality 
 
-Once the application is running, the API endpoints can be accessed using tools like cURL or Postman. Here's an example of how to create a new task:
+Grpc gateway implemenation
+Swagger UI implemenation
 
-```bash
-curl -X POST http://localhost:8080/ -d '{"title":"Task Title","description":"Task Description","priority":1}'
-```
-
-
+No Sql Database integartion with utils
+Dockerfile for containerization
+CI/CD pipeline setup (Github Actions, Gitlab CI or Jenkins?)
+Codecov integration
+JWT Authentication
+Rate Limiting
+Monitoring and Logging tools (Prometheus, Grafana, Zipkin etc.)
+Kubernetes Deployment
+Helm Chart for K8S deployment
+Cloud Provider Integrations (AWS, GCP)
+Distributed Tracing Tools (Zipkin, Jaeger)
+Retry Mechanism Implementation

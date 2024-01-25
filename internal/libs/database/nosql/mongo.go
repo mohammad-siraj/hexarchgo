@@ -2,6 +2,7 @@ package nosql
 
 import (
 	"context"
+	"errors"
 
 	dbInterface "github.com/mohammad-siraj/hexarchgo/internal/libs/database"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,5 +24,9 @@ func NewMongoClient(connectionString string) (dbInterface.IDatabase, error) {
 }
 
 func (m *mongoClient) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error) {
+	if len(opt) < 1 {
+		return "", errors.New("not enough params provided")
+	}
+
 	return "OK", nil
 }
