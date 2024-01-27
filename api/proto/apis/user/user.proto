@@ -1,0 +1,25 @@
+syntax="proto3";
+
+import "google/api/annotations.proto";
+//package grpc.gateway.protoc_gen_openapiv2.options;
+package user;
+option go_package = "pkg/user";
+
+service User{
+    rpc Register(UserRegisterRequest) returns (UserRegisterReponse){
+        option (google.api.http) = {
+            post: "/v1/example/echo"
+            body: "*"
+        };
+    }
+}
+
+message UserRegisterRequest{
+    string name =1;
+    string email=2;
+    string password=3;
+}
+message UserRegisterReponse{
+    string status=1;
+    string userId=2;
+}

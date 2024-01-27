@@ -1,8 +1,18 @@
 package http
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
+
+type HandlerFunc func(*context.Context)
+
+// ServeHTTP implements http.Handler.
+func (HandlerFunc) ServeHTTP(http.ResponseWriter, *http.Request) {
+	panic("unimplemented")
+}
 
 type HttpClient struct {
 	engine *gin.Engine
@@ -18,6 +28,7 @@ type IHttpClient interface {
 	Patch(relativePath string, handlerFunction ...gin.HandlerFunc)
 	Delete(relativePath string, handlerFunction ...gin.HandlerFunc)
 	NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient
+	Any(relativePath string, handlerFunction HandlerFunc)
 }
 
 func NewHttpClient() IHttpClient {
@@ -56,6 +67,10 @@ func (h *HttpClient) Use(middlewareFunctions ...gin.HandlerFunc) {
 	h.engine.Use(middlewareFunctions...)
 }
 
+func (h *HttpClient) Any(relativePath string, handlerFunction HandlerFunc) {
+	h.engine.Any(relativePath, gin.WrapH(handlerFunction))
+}
+
 // Subgroups
 func (h *SubGroup) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
 	return &SubGroup{
@@ -82,4 +97,8 @@ func (h *SubGroup) Delete(relativePath string, handlerFunction ...gin.HandlerFun
 // middlewear Compatibility
 func (h *SubGroup) Use(middlewareFunctions ...gin.HandlerFunc) {
 	h.subGroup.Use(middlewareFunctions...)
+}
+
+func (h *SubGroup) Any(relativePath string, handlerFunction HandlerFunc) {
+	h.subGroup.Any(relativePath, gin.WrapH(handlerFunction))
 }
