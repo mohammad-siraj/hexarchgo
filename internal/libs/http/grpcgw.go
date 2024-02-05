@@ -13,8 +13,14 @@ type RegisterServerFunc func(s grpc.ServiceRegistrar, server interface{})
 type RegisterFuncHandlerFunc func(context.Context, *runtime.ServeMux, *grpc.ClientConn) error
 
 type IgrpcGw interface {
-	RegisterServer(registerServerFunc RegisterServerFunc, serverInstance interface{})
+	RegisterServer(registerServerFunc func(grpc.ServiceRegistrar, interface{}), serverInstance interface{})
 	RegisterFuncHandler(registerFuncHandlerFunc RegisterFuncHandlerFunc) error
+	GetServerInstanceForRegister() *grpc.Server
+	GetMuxInstanceForRegister() *runtime.ServeMux
+	GetClientInstanceForRegister() *grpc.ClientConn
+	StartGrpcServer(ctx context.Context, Serverport string, HTTPServerPort string, ClientConnString string, server IHttpClient) error
+	ServerPort(serve net.Listener)
+	ConnectClient(clientConnectionString string) error
 }
 
 type grpcGw struct {
@@ -23,30 +29,21 @@ type grpcGw struct {
 	mux    *runtime.ServeMux
 }
 
-func NewGrpcGw(ClientConnString string, MuxConnString string, opts ...interface{}) (IgrpcGw, error) {
+func NewGrpcGw(ClientConnString string, opts ...interface{}) (IgrpcGw, error) {
 	server := grpc.NewServer()
-
-	clientConn, err := grpc.DialContext(
-		context.Background(),
-		//"0.0.0.0:8080"
-		ClientConnString,
-		grpc.WithBlock(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		return nil, err
-	}
 	gwmux := runtime.NewServeMux()
 	return &grpcGw{
 		server: server,
-		client: clientConn,
 		mux:    gwmux,
 	}, nil
 }
 
-func (g *grpcGw) RegisterServer(registerServerFunc RegisterServerFunc, serverInstance interface{}) {
-	registerServerFunc(g.server, serverInstance)
+func (g *grpcGw) ServerPort(serve net.Listener) {
+	g.server.Serve(serve)
+}
 
+func (g *grpcGw) RegisterServer(registerServerFunc func(grpc.ServiceRegistrar, interface{}), serverInstance interface{}) {
+	registerServerFunc(g.server, serverInstance)
 }
 
 func (g *grpcGw) RegisterFuncHandler(registerFuncHandlerFunc RegisterFuncHandlerFunc) error {
@@ -65,5 +62,31 @@ func (g *grpcGw) GrpcServerServe(ServerConnString string) error {
 	if err := g.server.Serve(lis); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (g *grpcGw) GetServerInstanceForRegister() *grpc.Server {
+	return g.server
+}
+
+func (g *grpcGw) GetMuxInstanceForRegister() *runtime.ServeMux {
+	return g.mux
+}
+
+func (g *grpcGw) GetClientInstanceForRegister() *grpc.ClientConn {
+	return g.client
+}
+
+func (g *grpcGw) ConnectClient(clientConnectionString string) error {
+	conn, err := grpc.DialContext(
+		context.Background(),
+		"0.0.0.0:8080",
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return err
+	}
+	g.client = conn
 	return nil
 }

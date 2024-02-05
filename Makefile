@@ -1,10 +1,10 @@
-PROTODIR = ./api/proto/apis
+PROTODIR = ./internal/domain/adapters/proto/apis
 
 generate-protos: $(PROTODIR)/*
 		for file in $^ ; do \
-			protoc -I ./api/proto \
-			--go_out=./api/proto --go_opt=paths=source_relative \
-			--go-grpc_out=./api/proto --go-grpc_opt=paths=source_relative \
-			--grpc-gateway_out=./api/proto --grpc-gateway_opt=paths=source_relative \
+			protoc -I ./internal/domain/adapters/proto \
+			--go_out=./internal/domain/adapters/proto --go_opt=paths=source_relative \
+			--go-grpc_out=./internal/domain/adapters/proto --go-grpc_opt=paths=source_relative \
+			--grpc-gateway_out=./internal/domain/adapters/proto --grpc-gateway_opt=paths=source_relative \
 			./$$file/*.proto; \
 		done

@@ -6,7 +6,7 @@ package user;
 option go_package = "pkg/user";
 
 service User{
-    rpc Register(UserRegisterRequest) returns (UserRegisterReponse){
+    rpc RegisterUser(UserRegisterRequest) returns (UserRegisterReponse){
         option (google.api.http) = {
             post: "/v1/example/echo"
             body: "*"
