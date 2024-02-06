@@ -13,13 +13,14 @@ type Iconfigs interface {
 }
 
 type configs struct {
-	fileName     string
-	maxSize      int  `default:"1024"`  //max size in bytes
-	maxBackups   int  `default:"30"`    //max number of backup files
-	maxAge       int  `default:"90"`    //age in days
-	localTime    bool `default:"true"`  //time used for local time
-	compress     bool `default:"true"`  //should the data be compressed
-	isProduction bool `default:"false"` //if the logger is set for production
+	fileName     string `default:"../test.log"`
+	maxSize      int    `default:"1024"`  //max size in bytes
+	maxBackups   int    `default:"30"`    //max number of backup files
+	maxAge       int    `default:"90"`    //age in days
+	localTime    bool   `default:"true"`  //time used for local time
+	compress     bool   `default:"true"`  //should the data be compressed
+	isProduction bool   `default:"false"` //if the logger is set for production
+	logRotation  bool   `default:"false"` //log rotation enabler
 }
 
 func NewlogConfigOptions(isProduction bool, opts ...IConfigOptionsFunction) Iconfigs {
@@ -85,4 +86,8 @@ func (c *configs) IslocalTime() bool {
 
 func (c *configs) IsCompressed() bool {
 	return c.compress
+}
+
+func (c *configs) IsLogRotated() bool {
+	return c.logRotation
 }

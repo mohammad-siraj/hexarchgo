@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -21,22 +22,34 @@ type Logger struct {
 }
 
 func NewLogger(config Iconfigs) ILogger {
+	stdout := zapcore.AddSync(os.Stdout)
 
-	encoderCfg := zap.NewDevelopmentEncoderConfig()
-	atomicLevel := zap.NewAtomicLevelAt(zap.DebugLevel)
-	if config.IsProduction() {
-		encoderCfg = zap.NewProductionEncoderConfig()
-		atomicLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
-	}
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   "logs/app.log",
+		MaxSize:    10, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, // days
+	})
 
-	encoderCfg.TimeKey = "timestamp"
-	encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
-	writeSyncer := genarateLogRotater(config)
+	level := zap.NewAtomicLevelAt(zap.InfoLevel)
 
-	logCore := zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg), writeSyncer, atomicLevel)
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
 
 	return &Logger{
-		log: zap.New(logCore),
+		log: zap.New(core),
 	}
 }
 

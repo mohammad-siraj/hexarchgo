@@ -18,7 +18,7 @@ type IgrpcGw interface {
 	GetServerInstanceForRegister() *grpc.Server
 	GetMuxInstanceForRegister() *runtime.ServeMux
 	GetClientInstanceForRegister() *grpc.ClientConn
-	StartGrpcServer(ctx context.Context, Serverport string, HTTPServerPort string, ClientConnString string, server IHttpClient) error
+	StartGrpcServer(ctx context.Context, server IHttpClient) error
 	ServerPort(serve net.Listener)
 	ConnectClient(clientConnectionString string) error
 }
@@ -29,7 +29,7 @@ type grpcGw struct {
 	mux    *runtime.ServeMux
 }
 
-func NewGrpcGw(ClientConnString string, opts ...interface{}) (IgrpcGw, error) {
+func NewGrpcGw() (IgrpcGw, error) {
 	server := grpc.NewServer()
 	gwmux := runtime.NewServeMux()
 	return &grpcGw{
@@ -39,6 +39,7 @@ func NewGrpcGw(ClientConnString string, opts ...interface{}) (IgrpcGw, error) {
 }
 
 func (g *grpcGw) ServerPort(serve net.Listener) {
+	defer g.server.Stop()
 	g.server.Serve(serve)
 }
 
@@ -80,7 +81,7 @@ func (g *grpcGw) GetClientInstanceForRegister() *grpc.ClientConn {
 func (g *grpcGw) ConnectClient(clientConnectionString string) error {
 	conn, err := grpc.DialContext(
 		context.Background(),
-		"0.0.0.0:8080",
+		clientConnectionString,
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)

@@ -2,43 +2,44 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	ports "github.com/mohammad-siraj/hexarchgo/internal/domain/adapters/ports"
-	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
+	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 )
 
 func main() {
-	c, err := http.NewHttpClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	grpcServer, err := http.NewGrpcGw("0.0.0.0:8080", c)
-	if err != nil {
-		log.Fatal(err)
-	}
+	HTTPServerPort := ":8090"
+	GRPCServerPort := ":8081"
+	isGrpcEnabled := true
 	ctx := context.Background()
-	//user.RegisterUserHandlerServer(context.Background(),)
-
-	ports.RegisterServicesToGrpcServer(grpcServer)
-
-	lis, err := net.Listen("tcp", ":8080")
+	serverHttp, err := httpServer.NewHttpServer(isGrpcEnabled)
 	if err != nil {
 		log.Fatal(err)
 	}
-	go grpcServer.ServerPort(lis)
+	loggerConfig := logger.NewlogConfigOptions(false)
+	loggerInstance := logger.NewLogger(loggerConfig)
+	loggerInstance.Info(ctx, "Starting server...\n")
+	if isGrpcEnabled {
+		ports.RegisterServicesToGrpcServer(serverHttp)
+		grpcServer := serverHttp.GetGrpcServerInstanceForRegister()
+		lis, err := net.Listen("tcp", GRPCServerPort)
+		if err != nil {
+			log.Fatal(err)
+		}
+		GRPCServerPortIp := fmt.Sprintf("0.0.0.0%s", GRPCServerPort)
+		go grpcServer.ServerPort(lis)
+		grpcServer.ConnectClient(GRPCServerPortIp)
+		ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer)
+		grpcServer.StartGrpcServer(ctx, serverHttp)
+	}
 
-	grpcServer.ConnectClient("0.0.0.0:8080")
-
-	ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer)
-
-	grpcServer.StartGrpcServer(ctx, ":8080", ":8090", "0.0.0.0:8080", c)
-
-	// subGroup := c.NewSubGroup("/v1")
-	// {
-	// 	//subGroup.Any("*{grpc_gateway}")
-	// }
+	err = serverHttp.Run(HTTPServerPort)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 )
 
-func RegisterServicesToGrpcServer(grpcGw http.IgrpcGw) {
-	server := grpcGw.GetServerInstanceForRegister()
+func RegisterServicesToGrpcServer(httpServer http.IHttpClient) {
+	server := httpServer.GetGrpcServerInstanceForRegister().GetServerInstanceForRegister()
 	handlerInstance := handler.NewUserHandler()
 	user.RegisterUserServer(server, handlerInstance)
 }

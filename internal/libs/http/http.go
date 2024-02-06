@@ -19,6 +19,7 @@ func (HandlerFunc) ServeHTTP(http.ResponseWriter, *http.Request) {
 
 type HttpClient struct {
 	engine *gin.Engine
+	grpc   IgrpcGw
 }
 
 type SubGroup struct {
@@ -31,16 +32,34 @@ type IHttpClient interface {
 	Put(relativePath string, handlerFunction ...gin.HandlerFunc)
 	Patch(relativePath string, handlerFunction ...gin.HandlerFunc)
 	Delete(relativePath string, handlerFunction ...gin.HandlerFunc)
+	Post(relativePath string, handlerFunction ...gin.HandlerFunc)
 	NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient
 	Any(relativePath string, handlerFunction ...gin.HandlerFunc)
+	GetGrpcServerInstanceForRegister() IgrpcGw
 }
 
-func NewHttpClient() (IHttpClient, error) {
+func NewHttpServer(isGrpcEnabled bool) (IHttpClient, error) {
 	client := &HttpClient{
 		engine: gin.New(),
 	}
+	if isGrpcEnabled {
+		grpcConnection, err := NewGrpcGw()
+		if err != nil {
+			return nil, err
+		}
+		client.grpc = grpcConnection
+	}
+
 	client.engine.Use(gin.Logger())
 	return client, nil
+}
+
+// grpc changes
+func (c *HttpClient) GetGrpcServerInstanceForRegister() IgrpcGw {
+	return c.grpc
+}
+func (c *SubGroup) GetGrpcServerInstanceForRegister() IgrpcGw {
+	return nil
 }
 
 // basic router
