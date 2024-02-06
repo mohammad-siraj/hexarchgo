@@ -22,7 +22,7 @@ func main() {
 	}
 	loggerConfig := logger.NewlogConfigOptions(false)
 	loggerInstance := logger.NewLogger(loggerConfig)
-	loggerInstance.Info(ctx, "Starting server INSTANCE...\n")
+	loggerInstance.Info(ctx, "Starting server ...\n")
 	if isGrpcEnabled {
 		ports.RegisterServicesToGrpcServer(serverHttp)
 		grpcServer := serverHttp.GetGrpcServerInstanceForRegister()
