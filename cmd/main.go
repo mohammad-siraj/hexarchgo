@@ -16,6 +16,11 @@ func main() {
 	GRPCServerPort := ":8081"
 	isGrpcEnabled := true
 	ctx := context.Background()
+	StartServer(ctx, isGrpcEnabled, GRPCServerPort, HTTPServerPort)
+
+}
+
+func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string, HTTPServerPort string) {
 	loggerConfig := logger.NewlogConfigOptions(false)
 	loggerInstance := logger.NewLogger(loggerConfig)
 	loggerInstance.Info(ctx, "Starting server ...\n")
@@ -41,5 +46,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

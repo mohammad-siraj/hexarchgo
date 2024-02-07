@@ -18,12 +18,12 @@ func (HandlerFunc) ServeHTTP(http.ResponseWriter, *http.Request) {
 	panic("unimplemented")
 }
 
-type HttpClient struct {
+type httpClient struct {
 	engine *gin.Engine
 	grpc   IgrpcGw
 }
 
-type SubGroup struct {
+type subGroup struct {
 	subGroup *gin.RouterGroup
 }
 
@@ -42,7 +42,7 @@ type IHttpClient interface {
 func NewHttpServer(isGrpcEnabled bool, logger interface {
 	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
 }) (IHttpClient, error) {
-	client := &HttpClient{
+	client := &httpClient{
 		engine: gin.New(),
 	}
 	if isGrpcEnabled {
@@ -60,21 +60,21 @@ func NewHttpServer(isGrpcEnabled bool, logger interface {
 }
 
 // grpc changes
-func (c *HttpClient) GetGrpcServerInstanceForRegister() IgrpcGw {
+func (c *httpClient) GetGrpcServerInstanceForRegister() IgrpcGw {
 	return c.grpc
 }
-func (c *SubGroup) GetGrpcServerInstanceForRegister() IgrpcGw {
+func (c *subGroup) GetGrpcServerInstanceForRegister() IgrpcGw {
 	return nil
 }
 
 // basic router
-func (h *HttpClient) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
-	return &SubGroup{
+func (h *httpClient) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
+	return &subGroup{
 		subGroup: h.engine.Group(path, handleFunctions...),
 	}
 }
 
-func (h *HttpClient) Run(ConnString string) error {
+func (h *httpClient) Run(ConnString string) error {
 	err := h.engine.Run(ConnString)
 	if err != nil {
 		return err
@@ -82,71 +82,71 @@ func (h *HttpClient) Run(ConnString string) error {
 	return nil
 }
 
-func (h *HttpClient) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.GET(relativePath, handlerFunction...)
 }
 
-func (h *HttpClient) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.PUT(relativePath, handlerFunction...)
 }
 
-func (h *HttpClient) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.POST(relativePath, handlerFunction...)
 }
 
-func (h *HttpClient) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.PATCH(relativePath, handlerFunction...)
 }
 
-func (h *HttpClient) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.DELETE(relativePath, handlerFunction...)
 }
 
 // middlewear Compatibility
-func (h *HttpClient) Use(middlewareFunctions ...gin.HandlerFunc) {
+func (h *httpClient) Use(middlewareFunctions ...gin.HandlerFunc) {
 	h.engine.Use(middlewareFunctions...)
 }
 
-func (h *HttpClient) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *httpClient) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.Any(relativePath, handlerFunction...)
 }
 
 // Subgroups
-func (h *SubGroup) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
-	return &SubGroup{
+func (h *subGroup) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
+	return &subGroup{
 		subGroup: h.subGroup.Group(path, handleFunctions...),
 	}
 }
 
-func (h *SubGroup) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.GET(relativePath, handlerFunction...)
 }
 
-func (h *SubGroup) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.PUT(relativePath, handlerFunction...)
 }
 
-func (h *SubGroup) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.POST(relativePath, handlerFunction...)
 }
 
-func (h *SubGroup) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.PATCH(relativePath, handlerFunction...)
 }
 
-func (h *SubGroup) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.DELETE(relativePath, handlerFunction...)
 }
 
 // middlewear Compatibility
-func (h *SubGroup) Use(middlewareFunctions ...gin.HandlerFunc) {
+func (h *subGroup) Use(middlewareFunctions ...gin.HandlerFunc) {
 	h.subGroup.Use(middlewareFunctions...)
 }
 
-func (h *SubGroup) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
+func (h *subGroup) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.Any(relativePath, handlerFunction...)
 }
-func (h *SubGroup) Run(ConnString string) error {
+func (h *subGroup) Run(ConnString string) error {
 	err := errors.New("unimplemented")
 	return err
 }
