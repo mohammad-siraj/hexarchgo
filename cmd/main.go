@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
-	ports "github.com/mohammad-siraj/hexarchgo/internal/domain/adapters/ports"
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
+	ports "github.com/mohammad-siraj/hexarchgo/internal/ports"
 )
 
 func main() {
@@ -16,13 +16,13 @@ func main() {
 	GRPCServerPort := ":8081"
 	isGrpcEnabled := true
 	ctx := context.Background()
-	serverHttp, err := httpServer.NewHttpServer(isGrpcEnabled)
-	if err != nil {
-		log.Fatal(err)
-	}
 	loggerConfig := logger.NewlogConfigOptions(false)
 	loggerInstance := logger.NewLogger(loggerConfig)
 	loggerInstance.Info(ctx, "Starting server ...\n")
+	serverHttp, err := httpServer.NewHttpServer(isGrpcEnabled, loggerInstance)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if isGrpcEnabled {
 		ports.RegisterServicesToGrpcServer(serverHttp)
 		grpcServer := serverHttp.GetGrpcServerInstanceForRegister()

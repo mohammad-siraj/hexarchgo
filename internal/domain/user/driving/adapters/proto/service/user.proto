@@ -2,8 +2,8 @@ syntax="proto3";
 
 import "google/api/annotations.proto";
 //package grpc.gateway.protoc_gen_openapiv2.options;
-package user;
-option go_package = "pkg/user";
+package service;
+option go_package = "pkg/service";
 
 service User{
     rpc RegisterUser(UserRegisterRequest) returns (UserRegisterReponse){

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mohammad-siraj/hexarchgo/internal/domain/adapters/proto/apis/user"
+	user "github.com/mohammad-siraj/hexarchgo/internal/domain/user/driving/adapters/proto/service"
 )
 
 type UserHandler struct {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
 )
 
 type HandlerFunc func(*context.Context)
@@ -38,12 +39,16 @@ type IHttpClient interface {
 	GetGrpcServerInstanceForRegister() IgrpcGw
 }
 
-func NewHttpServer(isGrpcEnabled bool) (IHttpClient, error) {
+func NewHttpServer(isGrpcEnabled bool, logger interface {
+	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
+}) (IHttpClient, error) {
 	client := &HttpClient{
 		engine: gin.New(),
 	}
 	if isGrpcEnabled {
-		grpcConnection, err := NewGrpcGw()
+		grpcConnection, err := NewGrpcGw(GrpcOptions{
+			logger: logger,
+		})
 		if err != nil {
 			return nil, err
 		}

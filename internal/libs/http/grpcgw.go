@@ -29,8 +29,18 @@ type grpcGw struct {
 	mux    *runtime.ServeMux
 }
 
-func NewGrpcGw() (IgrpcGw, error) {
-	server := grpc.NewServer()
+type GrpcOptions struct {
+	logger interface {
+		GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
+	}
+}
+
+func NewGrpcGw(opts GrpcOptions) (IgrpcGw, error) {
+	server := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			opts.logger.GetGrpcUnaryInterceptor(),
+		),
+	)
 	gwmux := runtime.NewServeMux()
 	return &grpcGw{
 		server: server,

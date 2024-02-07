@@ -1,0 +1,5 @@
+package adapters
+
+func NewUserHandler() {
+
+}

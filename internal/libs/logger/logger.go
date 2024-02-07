@@ -4,8 +4,10 @@ import (
 	"context"
 	"os"
 
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -15,6 +17,7 @@ type ILogger interface {
 	Info(ctx context.Context, message string, fieldData ...ILogFieldInput)
 	Warn(ctx context.Context, message string, fieldData ...ILogFieldInput)
 	Error(ctx context.Context, message string, fieldData ...ILogFieldInput)
+	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
 }
 
 type Logger struct {
@@ -47,9 +50,11 @@ func NewLogger(config Iconfigs) ILogger {
 		zapcore.NewCore(consoleEncoder, stdout, level),
 		zapcore.NewCore(fileEncoder, file, level),
 	)
+	log := zap.New(core)
+	grpc_zap.ReplaceGrpcLogger(log)
 
 	return &Logger{
-		log: zap.New(core),
+		log: log,
 	}
 }
 
@@ -98,6 +103,11 @@ func (l *Logger) Error(ctx context.Context, message string, fieldData ...ILogFie
 		return
 	}
 	l.log.Error(message)
+}
+
+// grpc logger
+func (l *Logger) GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor {
+	return grpc_zap.UnaryServerInterceptor(l.log)
 }
 
 type ILogFieldInput interface {
