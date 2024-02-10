@@ -3,6 +3,11 @@ package logger
 type IConfigOptionsFunction func(*configs)
 
 type Iconfigs interface {
+	WithFilename(filename string)
+	WithMaxBackUp(maxBackUp int)
+	WithMaxAge(maxAge int)
+	WithIsLocalTime(isLocalTime bool)
+	WithIsCompressed(isCompressed bool)
 	IsProduction() bool
 	FileName() string
 	MaxAge() int

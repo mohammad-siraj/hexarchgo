@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,8 +12,6 @@ import (
 )
 
 type HandlerFunc func(*context.Context)
-
-type ginHandlerFunc func(*gin.Context)
 
 // ServeHTTP implements http.Handler.
 func (HandlerFunc) ServeHTTP(http.ResponseWriter, *http.Request) {
@@ -41,7 +41,7 @@ type IHttpClient interface {
 
 func NewHttpServer(isGrpcEnabled bool, logger interface {
 	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
-}) (IHttpClient, error) {
+}, ioWriter io.Writer) (IHttpClient, error) {
 	client := &httpClient{
 		engine: gin.New(),
 	}
@@ -55,8 +55,31 @@ func NewHttpServer(isGrpcEnabled bool, logger interface {
 		client.grpc = grpcConnection
 	}
 
-	client.engine.Use(gin.Logger())
+	if ioWriter == nil {
+		client.engine.Use(gin.Logger())
+	} else {
+		client.engine.Use(jsonLoggerMiddleware(ioWriter))
+	}
 	return client, nil
+}
+
+func jsonLoggerMiddleware(ioWriter io.Writer) gin.HandlerFunc {
+	return gin.LoggerWithFormatter(
+		func(params gin.LogFormatterParams) string {
+			log := make(map[string]interface{})
+
+			log["status_code"] = params.StatusCode
+			log["path"] = params.Path
+			log["method"] = params.Method
+			log["start_time"] = params.TimeStamp.Format("2006/01/02 - 15:04:05")
+			log["remote_addr"] = params.ClientIP
+			log["response_time"] = params.Latency.String()
+
+			s, _ := json.Marshal(log)
+			ioWriter.Write([]byte(string(s) + "\n"))
+			return string(s) + "\n"
+		},
+	)
 }
 
 // grpc changes
@@ -102,20 +125,19 @@ func (h *httpClient) Delete(relativePath string, handlerFunction ...gin.HandlerF
 	h.engine.DELETE(relativePath, handlerFunction...)
 }
 
-// middlewear Compatibility
-func (h *httpClient) Use(middlewareFunctions ...gin.HandlerFunc) {
-	h.engine.Use(middlewareFunctions...)
-}
-
 func (h *httpClient) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.engine.Any(relativePath, handlerFunction...)
 }
 
 // Subgroups
 func (h *subGroup) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
-	return &subGroup{
+	subGroup := &subGroup{
 		subGroup: h.subGroup.Group(path, handleFunctions...),
 	}
+	return subGroup
+}
+func (h *subGroup) Use(middleware http.HandlerFunc) {
+	panic("unimplemented")
 }
 
 func (h *subGroup) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
@@ -139,13 +161,11 @@ func (h *subGroup) Delete(relativePath string, handlerFunction ...gin.HandlerFun
 }
 
 // middlewear Compatibility
-func (h *subGroup) Use(middlewareFunctions ...gin.HandlerFunc) {
-	h.subGroup.Use(middlewareFunctions...)
-}
 
 func (h *subGroup) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.Any(relativePath, handlerFunction...)
 }
+
 func (h *subGroup) Run(ConnString string) error {
 	err := errors.New("unimplemented")
 	return err

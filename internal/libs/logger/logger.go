@@ -2,7 +2,10 @@ package logger
 
 import (
 	"context"
+	"io"
+	"net/http"
 	"os"
+	"time"
 
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"go.uber.org/zap"
@@ -11,27 +14,34 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+const (
+	timeFormat = time.RFC3339
+)
+
 type ILogger interface {
 	Sync()
 	Debug(ctx context.Context, message string, fieldData ...ILogFieldInput)
 	Info(ctx context.Context, message string, fieldData ...ILogFieldInput)
 	Warn(ctx context.Context, message string, fieldData ...ILogFieldInput)
 	Error(ctx context.Context, message string, fieldData ...ILogFieldInput)
+	GetIoWriter() io.Writer
+	RequestLog(request *http.Request)
 	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
 }
 
 type Logger struct {
-	log *zap.Logger
+	log  *zap.Logger
+	file zapcore.WriteSyncer
 }
 
 func NewLogger(config Iconfigs) ILogger {
 	stdout := zapcore.AddSync(os.Stdout)
 
 	file := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "logs/app.log",
-		MaxSize:    10, // megabytes
-		MaxBackups: 3,
-		MaxAge:     7, // days
+		Filename:   config.FileName(),
+		MaxSize:    config.MaxSize(), // megabytes
+		MaxBackups: config.MaxBackups(),
+		MaxAge:     config.MaxAge(), // days
 	})
 
 	level := zap.NewAtomicLevelAt(zap.InfoLevel)
@@ -54,19 +64,13 @@ func NewLogger(config Iconfigs) ILogger {
 	grpc_zap.ReplaceGrpcLogger(log)
 
 	return &Logger{
-		log: log,
+		log:  log,
+		file: file,
 	}
 }
 
-func genarateLogRotater(c Iconfigs) zapcore.WriteSyncer {
-	ll := &lumberjack.Logger{
-		Filename:   c.FileName(),
-		MaxSize:    c.MaxSize(), //MB
-		MaxBackups: c.MaxBackups(),
-		MaxAge:     c.MaxAge(), //days
-		Compress:   c.IsCompressed(),
-	}
-	return zapcore.AddSync(ll)
+func (l *Logger) GetIoWriter() io.Writer {
+	return l.file
 }
 
 func (l *Logger) Sync() {
@@ -110,6 +114,27 @@ func (l *Logger) GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return grpc_zap.UnaryServerInterceptor(l.log)
 }
 
+func (l *Logger) RequestLog(request *http.Request) {
+	start := time.Now()
+	query := request.URL.RawQuery
+	end := time.Now()
+	latency := end.Sub(start)
+	end = end.UTC()
+	path := request.URL.Path
+
+	fields := []zapcore.Field{
+		zap.Int("status", request.Response.StatusCode),
+		zap.String("method", request.Method),
+		zap.String("path", path),
+		zap.String("query", query),
+		zap.String("ip", request.RemoteAddr),
+		zap.String("user-agent", request.UserAgent()),
+		zap.Duration("latency", latency),
+	}
+	fields = append(fields, zap.String("time", end.Format(timeFormat)))
+	l.Info(context.Background(), request.Method+" "+path, NewLogFieldInput("headers", fields))
+}
+
 type ILogFieldInput interface {
 	GetFieldName() string
 	GetField() interface{}
@@ -120,7 +145,7 @@ type LogFieldInput struct {
 	fields    interface{}
 }
 
-func NewLogFieldInput(fieldName string, fields interface{}) LogFieldInput {
+func NewLogFieldInput(fieldName string, fields interface{}) ILogFieldInput {
 	return LogFieldInput{
 		fieldName: fieldName,
 		fields:    fields,
