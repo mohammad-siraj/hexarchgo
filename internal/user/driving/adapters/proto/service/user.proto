@@ -9,14 +9,14 @@ option go_package = "pkg/service";
 service User{
     rpc RegisterUser(UserRegisterRequest) returns (UserRegisterReponse){
         option (google.api.http) = {
-            post: "/v1/example/echo"
+            post: "/v1/user/register"
             body: "*"
         };
     }
 
     rpc LoginUser (UserLoginRequest) returns  (UserLoginResponse){
         option (google.api.http) = {
-            post: "/v1/example/echo"
+            post: "/v1/user/login"
             body: "*"
         };
     }
@@ -74,7 +74,7 @@ message UserLoginRequest{
     string email=2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "email of the registered user"}];
     string password=3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "password of the registered user"}];
 }
-message UserLoginReponse{
+message UserLoginResponse{
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
             title: "user login response"

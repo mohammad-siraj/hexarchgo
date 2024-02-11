@@ -28,7 +28,7 @@ func ParseQueryString(queryString string) (*SqlQuery, error) {
 		case "SELECT":
 			if i+1 < len(queryParts) && queryParts[i+1] == "COUNT" {
 				sqlQuery.Count = queryParts[i+2]
-				i += 2
+				//i += 2
 			}
 		case "FROM":
 			continue

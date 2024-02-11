@@ -16,7 +16,40 @@
     "application/json"
   ],
   "paths": {
-    "/v1/example/echo": {
+    "/v1/user/login": {
+      "post": {
+        "operationId": "User_LoginUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serviceUserLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "protobuf to json request user request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serviceUserLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/v1/user/register": {
       "post": {
         "operationId": "User_RegisterUser",
         "responses": {
@@ -78,6 +111,62 @@
           }
         }
       }
+    },
+    "serviceUserLoginRequest": {
+      "type": "object",
+      "example": {
+        "email": "mail2mrsiraj@gmail.com",
+        "password": "siraj@12345"
+      },
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "email of the registered user"
+        },
+        "password": {
+          "type": "string",
+          "description": "password of the registered user"
+        }
+      },
+      "description": "protobuf to json request user request",
+      "title": "user login request",
+      "externalDocs": {
+        "description": "reference",
+        "url": "https://github.com/grpc-ecosystem/grpc-gateway"
+      },
+      "required": [
+        "uuid",
+        "int64_value",
+        "double_value"
+      ]
+    },
+    "serviceUserLoginResponse": {
+      "type": "object",
+      "example": {
+        "status": "OK",
+        "userId": "siraj1233"
+      },
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "status of the registered user"
+        },
+        "userId": {
+          "type": "string",
+          "description": "userId of the registered user"
+        }
+      },
+      "description": "protobuf to json request user request",
+      "title": "user login response",
+      "externalDocs": {
+        "description": "reference",
+        "url": "https://github.com/grpc-ecosystem/grpc-gateway"
+      },
+      "required": [
+        "uuid",
+        "int64_value",
+        "double_value"
+      ]
     },
     "serviceUserRegisterReponse": {
       "type": "object",

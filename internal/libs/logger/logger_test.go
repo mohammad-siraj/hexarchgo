@@ -27,7 +27,7 @@ func TestNewLogger(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			name: "Test Logger Creation",
-			args: args{NewlogConfigOptions(true)},
+			args: args{NewlogConfigOptions(false)},
 			want: NewLogger(NewlogConfigOptions(true)),
 		},
 	}
@@ -35,7 +35,6 @@ func TestNewLogger(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewLogger(tt.args.config); !reflect.DeepEqual(got, tt.want) {
 				got.Error(context.Background(), "testing")
-				//t.Errorf("NewLogger() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -74,7 +74,9 @@ func (l *Logger) GetIoWriter() io.Writer {
 }
 
 func (l *Logger) Sync() {
-	l.log.Sync()
+	if err := l.log.Sync(); err != nil {
+		return
+	}
 }
 
 func (l *Logger) Debug(ctx context.Context, message string, fieldData ...ILogFieldInput) {

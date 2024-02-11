@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
 	"google.golang.org/grpc"
 )
 
@@ -49,7 +50,7 @@ func NewHttpServer(isGrpcEnabled bool, logger interface {
 	if isGrpcEnabled {
 		grpcConnection, err := NewGrpcGw(GrpcOptions{
 			logger: logger,
-		})
+		}, middleware.GrpcAuthMiddleware(context.Background()))
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +78,9 @@ func jsonLoggerMiddleware(ioWriter io.Writer) gin.HandlerFunc {
 			log["response_time"] = params.Latency.String()
 
 			s, _ := json.Marshal(log)
-			ioWriter.Write([]byte(string(s) + "\n"))
+			if _, err := ioWriter.Write([]byte(string(s) + "\n")); err != nil {
+				return `{"error":"log format"}`
+			}
 			return string(s) + "\n"
 		},
 	)

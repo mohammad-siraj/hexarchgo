@@ -63,7 +63,16 @@ func SetUpGrpcGateWay(ctx context.Context, serverHttp httpServer.IHttpClient, lo
 	}
 	GRPCServerPortIp := fmt.Sprintf("0.0.0.0%s", GRPCServerPort)
 	go grpcServer.ServerPort(lis)
-	grpcServer.ConnectClient(GRPCServerPortIp)
-	ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer)
-	grpcServer.StartGrpcServer(ctx, serverHttp)
+	if err := grpcServer.ConnectClient(GRPCServerPortIp); err != nil {
+		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
+		return
+	}
+	if err := ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer); err != nil {
+		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
+		return
+	}
+	if err := grpcServer.StartGrpcServer(ctx, serverHttp); err != nil {
+		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
+		return
+	}
 }
