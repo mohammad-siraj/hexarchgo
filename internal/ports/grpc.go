@@ -3,14 +3,15 @@ package ports
 import (
 	"context"
 
-	userHandler "github.com/mohammad-siraj/hexarchgo/internal/domain/user/driving/adapters/proto"
-	user "github.com/mohammad-siraj/hexarchgo/internal/domain/user/driving/adapters/proto/service"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
+	userHandler "github.com/mohammad-siraj/hexarchgo/internal/user/driving/adapters"
+	user "github.com/mohammad-siraj/hexarchgo/internal/user/driving/adapters/proto/service"
 )
 
-func RegisterServicesToGrpcServer(httpServer http.IHttpClient) {
+func RegisterServicesToGrpcServer(httpServer http.IHttpClient, log logger.ILogger) {
 	server := httpServer.GetGrpcServerInstanceForRegister().GetServerInstanceForRegister()
-	handlerInstance := userHandler.NewUserHandler()
+	handlerInstance := userHandler.NewUserHandler(httpServer, log)
 	user.RegisterUserServer(server, handlerInstance)
 }
 

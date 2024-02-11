@@ -1,0 +1,144 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "package grpc.gateway.protoc_gen_openapiv2.options;",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "User"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/example/echo": {
+      "post": {
+        "operationId": "User_RegisterUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/serviceUserRegisterReponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "protobuf to json request user request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serviceUserRegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "serviceUserRegisterReponse": {
+      "type": "object",
+      "example": {
+        "status": "OK",
+        "userId": "siraj1233"
+      },
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "status of the registered user"
+        },
+        "userId": {
+          "type": "string",
+          "description": "userId of the registered user"
+        }
+      },
+      "description": "protobuf to json request user request",
+      "title": "user register response",
+      "externalDocs": {
+        "description": "reference",
+        "url": "https://github.com/grpc-ecosystem/grpc-gateway"
+      },
+      "required": [
+        "uuid",
+        "int64_value",
+        "double_value"
+      ]
+    },
+    "serviceUserRegisterRequest": {
+      "type": "object",
+      "example": {
+        "name": "siraj",
+        "email": "mail2mrsiraj@gmail.com",
+        "password": "siraj@12345"
+      },
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "user name of the registered user"
+        },
+        "email": {
+          "type": "string",
+          "description": "email of the registered user"
+        },
+        "password": {
+          "type": "string",
+          "description": "password of the registered user"
+        }
+      },
+      "description": "protobuf to json request user request",
+      "title": "user register request",
+      "externalDocs": {
+        "description": "reference",
+        "url": "https://github.com/grpc-ecosystem/grpc-gateway"
+      },
+      "required": [
+        "uuid",
+        "int64_value",
+        "double_value"
+      ]
+    }
+  }
+}

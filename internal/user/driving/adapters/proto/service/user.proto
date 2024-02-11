@@ -1,0 +1,92 @@
+syntax="proto3";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+//package grpc.gateway.protoc_gen_openapiv2.options;
+package service;
+option go_package = "pkg/service";
+
+service User{
+    rpc RegisterUser(UserRegisterRequest) returns (UserRegisterReponse){
+        option (google.api.http) = {
+            post: "/v1/example/echo"
+            body: "*"
+        };
+    }
+
+    rpc LoginUser (UserLoginRequest) returns  (UserLoginResponse){
+        option (google.api.http) = {
+            post: "/v1/example/echo"
+            body: "*"
+        };
+    }
+}
+
+message UserRegisterRequest{
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "user register request"
+            description: "protobuf to json request user request"
+            required: ["uuid", "int64_value", "double_value"]
+        }
+        external_docs: {
+            url: "https://github.com/grpc-ecosystem/grpc-gateway";
+            description: "reference";
+        }
+        example: "{\"name\": \"siraj\",\"email\": \"mail2mrsiraj@gmail.com\",\"password\": \"siraj@12345\"}"
+    };
+
+    string name =1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "user name of the registered user"}];
+    string email=2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "email of the registered user"}];
+    string password=3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "password of the registered user"}];
+}
+message UserRegisterReponse{
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "user register response"
+            description: "protobuf to json request user request"
+            required: ["uuid", "int64_value", "double_value"]
+        }
+        external_docs: {
+            url: "https://github.com/grpc-ecosystem/grpc-gateway";
+            description: "reference";
+        }
+        example: "{\"status\": \"OK\",\"userId\": \"siraj1233\"}"
+    };
+    string status=1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "status of the registered user"}];
+    string userId=2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "userId of the registered user"}];
+}
+
+
+message UserLoginRequest{
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "user login request"
+            description: "protobuf to json request user request"
+            required: ["uuid", "int64_value", "double_value"]
+        }
+        external_docs: {
+            url: "https://github.com/grpc-ecosystem/grpc-gateway";
+            description: "reference";
+        }
+        example: "{\"email\": \"mail2mrsiraj@gmail.com\",\"password\": \"siraj@12345\"}"
+    };
+    string email=2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "email of the registered user"}];
+    string password=3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "password of the registered user"}];
+}
+message UserLoginReponse{
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "user login response"
+            description: "protobuf to json request user request"
+            required: ["uuid", "int64_value", "double_value"]
+        }
+        external_docs: {
+            url: "https://github.com/grpc-ecosystem/grpc-gateway";
+            description: "reference";
+        }
+        example: "{\"status\": \"OK\",\"userId\": \"siraj1233\"}"
+    };
+    string status=1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "status of the registered user"}];
+    string userId=2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "userId of the registered user"}];
+}

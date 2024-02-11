@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/ports"
@@ -30,7 +28,7 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	loggerConfig.WithIsCompressed(true)
 	loggerConfig.WithIsLocalTime(true)
 	loggerConfig.WithMaxAge(1)
-	loggerConfig.WithMaxBackUp(2)
+	loggerConfig.WithMaxBackUp(1)
 
 	//logger
 	loggerInstance := logger.NewLogger(loggerConfig)
@@ -45,37 +43,27 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 		log.Fatal(err)
 	}
 	if isGrpcEnabled {
-		ports.RegisterServicesToGrpcServer(serverHttp)
-		grpcServer := serverHttp.GetGrpcServerInstanceForRegister()
-		lis, err := net.Listen("tcp", GRPCServerPort)
-		if err != nil {
-			log.Fatal(err)
-		}
-		GRPCServerPortIp := fmt.Sprintf("0.0.0.0%s", GRPCServerPort)
-		go grpcServer.ServerPort(lis)
-		grpcServer.ConnectClient(GRPCServerPortIp)
-		ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer)
-		grpcServer.StartGrpcServer(ctx, serverHttp)
+		SetUpGrpcGateWay(ctx, serverHttp, loggerInstance, GRPCServerPort)
 	}
-	// serverHttp.Use(func(w http.ResponseWriter, r *http.Request) {
-	// 	loggerInstance.RequestLog(r)
-	// })
 
-	serverHttp.Get("/token", gin.WrapF(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	}))
-
-	subGroup := serverHttp.NewSubGroup("/auth", func(ctx *gin.Context) {
-
-	})
-	{
-		subGroup.Get("/test", gin.WrapF(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello World!"))
-		}))
-	}
+	ports.RegisterRequestHandlers(serverHttp, loggerInstance)
 
 	err = serverHttp.Run(HTTPServerPort)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func SetUpGrpcGateWay(ctx context.Context, serverHttp httpServer.IHttpClient, loggerInstance logger.ILogger, GRPCServerPort string) {
+	ports.RegisterServicesToGrpcServer(serverHttp, loggerInstance)
+	grpcServer := serverHttp.GetGrpcServerInstanceForRegister()
+	lis, err := net.Listen("tcp", GRPCServerPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+	GRPCServerPortIp := fmt.Sprintf("0.0.0.0%s", GRPCServerPort)
+	go grpcServer.ServerPort(lis)
+	grpcServer.ConnectClient(GRPCServerPortIp)
+	ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer)
+	grpcServer.StartGrpcServer(ctx, serverHttp)
 }

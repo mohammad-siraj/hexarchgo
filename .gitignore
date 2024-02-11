@@ -1,3 +1,4 @@
 #log files
 *.log
 log/
+data/secret/

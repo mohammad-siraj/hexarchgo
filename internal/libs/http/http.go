@@ -29,13 +29,14 @@ type subGroup struct {
 
 type IHttpClient interface {
 	Run(ConnString string) error
-	Get(relativePath string, handlerFunction ...gin.HandlerFunc)
-	Put(relativePath string, handlerFunction ...gin.HandlerFunc)
-	Patch(relativePath string, handlerFunction ...gin.HandlerFunc)
-	Delete(relativePath string, handlerFunction ...gin.HandlerFunc)
-	Post(relativePath string, handlerFunction ...gin.HandlerFunc)
-	NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient
+	Get(relativePath string, handlerFunction ...http.HandlerFunc)
+	Put(relativePath string, handlerFunction ...http.HandlerFunc)
+	Patch(relativePath string, handlerFunction ...http.HandlerFunc)
+	Delete(relativePath string, handlerFunction ...http.HandlerFunc)
+	Post(relativePath string, handlerFunction ...http.HandlerFunc)
+	NewSubGroup(path string, handleFunctions ...http.HandlerFunc) IHttpClient
 	Any(relativePath string, handlerFunction ...gin.HandlerFunc)
+	Use(handlerFunction ...http.HandlerFunc)
 	GetGrpcServerInstanceForRegister() IgrpcGw
 }
 
@@ -91,9 +92,13 @@ func (c *subGroup) GetGrpcServerInstanceForRegister() IgrpcGw {
 }
 
 // basic router
-func (h *httpClient) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
+func (h *httpClient) NewSubGroup(path string, handleFunctions ...http.HandlerFunc) IHttpClient {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handleFunctions))
+	for i, v := range handleFunctions {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
 	return &subGroup{
-		subGroup: h.engine.Group(path, handleFunctions...),
+		subGroup: h.engine.Group(path, ginHandleFunction...),
 	}
 }
 
@@ -105,24 +110,52 @@ func (h *httpClient) Run(ConnString string) error {
 	return nil
 }
 
-func (h *httpClient) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.engine.GET(relativePath, handlerFunction...)
+func (h *httpClient) Get(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.GET(relativePath, ginHandleFunction...)
 }
 
-func (h *httpClient) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.engine.PUT(relativePath, handlerFunction...)
+func (h *httpClient) Put(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.PUT(relativePath, ginHandleFunction...)
 }
 
-func (h *httpClient) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.engine.POST(relativePath, handlerFunction...)
+func (h *httpClient) Post(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.POST(relativePath, ginHandleFunction...)
 }
 
-func (h *httpClient) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.engine.PATCH(relativePath, handlerFunction...)
+func (h *httpClient) Patch(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.PATCH(relativePath, ginHandleFunction...)
 }
 
-func (h *httpClient) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.engine.DELETE(relativePath, handlerFunction...)
+func (h *httpClient) Delete(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.DELETE(relativePath, ginHandleFunction...)
+}
+
+func (h *httpClient) Use(handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.engine.Use(ginHandleFunction...)
 }
 
 func (h *httpClient) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
@@ -130,37 +163,69 @@ func (h *httpClient) Any(relativePath string, handlerFunction ...gin.HandlerFunc
 }
 
 // Subgroups
-func (h *subGroup) NewSubGroup(path string, handleFunctions ...gin.HandlerFunc) IHttpClient {
+func (h *subGroup) NewSubGroup(path string, handleFunctions ...http.HandlerFunc) IHttpClient {
+
+	ginHandleFunction := make([]gin.HandlerFunc, len(handleFunctions))
+	for i, v := range handleFunctions {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
 	subGroup := &subGroup{
-		subGroup: h.subGroup.Group(path, handleFunctions...),
+		subGroup: h.subGroup.Group(path, ginHandleFunction...),
 	}
 	return subGroup
 }
-func (h *subGroup) Use(middleware http.HandlerFunc) {
-	panic("unimplemented")
+
+// func (h *subGroup) Use(middleware http.HandlerFunc) {
+// 	panic("unimplemented")
+// }
+
+func (h *subGroup) Get(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.GET(relativePath, ginHandleFunction...)
 }
 
-func (h *subGroup) Get(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.subGroup.GET(relativePath, handlerFunction...)
+func (h *subGroup) Put(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.PUT(relativePath, ginHandleFunction...)
 }
 
-func (h *subGroup) Put(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.subGroup.PUT(relativePath, handlerFunction...)
+func (h *subGroup) Post(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.POST(relativePath, ginHandleFunction...)
 }
 
-func (h *subGroup) Post(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.subGroup.POST(relativePath, handlerFunction...)
+func (h *subGroup) Patch(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.PATCH(relativePath, ginHandleFunction...)
 }
 
-func (h *subGroup) Patch(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.subGroup.PATCH(relativePath, handlerFunction...)
+func (h *subGroup) Delete(relativePath string, handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.DELETE(relativePath, ginHandleFunction...)
 }
 
-func (h *subGroup) Delete(relativePath string, handlerFunction ...gin.HandlerFunc) {
-	h.subGroup.DELETE(relativePath, handlerFunction...)
+func (h *subGroup) Use(handlerFunction ...http.HandlerFunc) {
+	ginHandleFunction := make([]gin.HandlerFunc, len(handlerFunction))
+	for i, v := range handlerFunction {
+		ginHandleFunction[i] = gin.WrapF(v)
+	}
+	h.subGroup.Use(ginHandleFunction...)
 }
-
-// middlewear Compatibility
 
 func (h *subGroup) Any(relativePath string, handlerFunction ...gin.HandlerFunc) {
 	h.subGroup.Any(relativePath, handlerFunction...)
