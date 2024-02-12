@@ -4,6 +4,7 @@ import (
 	"context"
 
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
@@ -15,13 +16,15 @@ import (
 type UserHandler struct {
 	server http.IHttpClient
 	log    logger.ILogger
+	cache  database.IDatabase
 	user.UnimplementedUserServer
 }
 
-func NewUserHandler(h http.IHttpClient, l logger.ILogger) *UserHandler {
+func NewUserHandler(h http.IHttpClient, l logger.ILogger, cacheClient database.IDatabase) *UserHandler {
 	return &UserHandler{
 		server: h,
 		log:    l,
+		cache:  cacheClient,
 	}
 }
 
@@ -31,6 +34,13 @@ func (u *UserHandler) RegisterUser(ctx context.Context, in *user.UserRegisterReq
 
 	token, err := middleware.CreateToken("user")
 	if err != nil {
+		return &user.UserRegisterReponse{
+			Status: "FAILED",
+			UserId: "",
+		}, nil
+	}
+	if _, err := u.cache.ExecWithContext(ctx, "SET "+in.Email+" "+token+"-"+in.Password); err != nil {
+		u.log.Error(ctx, err.Error())
 		return &user.UserRegisterReponse{
 			Status: "FAILED",
 			UserId: "",
@@ -61,8 +71,17 @@ func (u *UserHandler) LoginUser(ctx context.Context, in *user.UserLoginRequest) 
 	if err := grpc.SendHeader(ctx, header); err != nil {
 		return nil, err
 	}
+
+	tokenData, err := u.cache.ExecWithContext(ctx, "GET "+in.Email)
+	if err != nil {
+		u.log.Error(ctx, err.Error())
+		return &user.UserLoginResponse{
+			Status: "FAILED",
+			UserId: "",
+		}, nil
+	}
 	return &user.UserLoginResponse{
 		Status: "OK",
-		UserId: "1234",
+		UserId: tokenData,
 	}, nil
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	user "github.com/mohammad-siraj/hexarchgo/internal/user/driving/adapters"
@@ -19,19 +20,21 @@ type IPorter interface {
 }
 
 type porter struct {
-	server http.IHttpClient
-	log    logger.ILogger
+	server      http.IHttpClient
+	log         logger.ILogger
+	cacheClient database.IDatabase
 }
 
-func NewPorter(h http.IHttpClient, l logger.ILogger) IPorter {
+func NewPorter(h http.IHttpClient, l logger.ILogger, cacheClient database.IDatabase) IPorter {
 	return &porter{
-		server: h,
-		log:    l,
+		server:      h,
+		log:         l,
+		cacheClient: cacheClient,
 	}
 }
 
 func (p *porter) RegisterRequestHandlers() {
-	userHandler := user.NewUserHandler(p.server, p.log)
+	userHandler := user.NewUserHandler(p.server, p.log, p.cacheClient)
 	userSubRoute := p.server.NewSubGroup("/auth")
 	{
 		userSubRoute.Post("/register", userHandler.RegisterUserHandler)

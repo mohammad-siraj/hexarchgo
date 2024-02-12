@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
@@ -42,7 +43,18 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 		log.Fatal(err)
 	}
 
-	porter := ports.NewPorter(serverHttp, loggerInstance)
+	cacheClient := cache.NewCacheClient("localhost:6379", "", 1)
+	if _, err := cacheClient.ExecWithContext(context.Background(), `SET testkey test-value`); err != nil {
+		loggerInstance.Error(ctx, err.Error())
+	}
+
+	value, err := cacheClient.ExecWithContext(context.Background(), `GET testkey`)
+	if err != nil {
+		loggerInstance.Error(ctx, err.Error())
+	}
+	loggerInstance.Info(ctx, value)
+
+	porter := ports.NewPorter(serverHttp, loggerInstance, cacheClient)
 	if isGrpcEnabled {
 		porter.SetUpGrpcGateWay(ctx, GRPCServerPort)
 	}

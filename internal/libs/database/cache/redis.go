@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	dbInterface "github.com/mohammad-siraj/hexarchgo/internal/libs/database"
@@ -26,6 +27,7 @@ func NewCacheClient(address, password string, db int) dbInterface.IDatabase {
 func (r *redisClient) ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error) {
 	output, err := r.queryStringParser(ctx, queryString)
 	if err != nil {
+		fmt.Println(output)
 		return "", err
 	}
 	return output, nil
@@ -33,7 +35,7 @@ func (r *redisClient) ExecWithContext(ctx context.Context, queryString string, o
 
 func (r *redisClient) queryStringParser(ctx context.Context, queryString string) (string, error) {
 	queryComponents := strings.Split(queryString, " ")
-	switch strings.ToLower(queryComponents[0]) {
+	switch strings.ToUpper(queryComponents[0]) {
 	case "SET":
 		{
 			if len(queryComponents) != 3 {
@@ -43,6 +45,7 @@ func (r *redisClient) queryStringParser(ctx context.Context, queryString string)
 			value := queryComponents[2]
 			output := r.client.Set(ctx, key, value, 0)
 			if output.Err() != nil {
+
 				return "", output.Err()
 			}
 			return "OK", nil

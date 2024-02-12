@@ -9,7 +9,7 @@ import (
 
 func (p *porter) RegisterServicesToGrpcServer() {
 	server := p.server.GetGrpcServerInstanceForRegister().GetServerInstanceForRegister()
-	handlerInstance := userHandler.NewUserHandler(p.server, p.log)
+	handlerInstance := userHandler.NewUserHandler(p.server, p.log, p.cacheClient)
 	user.RegisterUserServer(server, handlerInstance)
 }
 
