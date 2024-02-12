@@ -125,6 +125,5 @@ func GrpcAuthMiddleware(ctx context.Context) grpc.UnaryServerInterceptor {
 }
 
 func AuthSkip(_ context.Context, c interceptors.CallMeta) bool {
-	fmt.Println(c.FullMethod())
 	return c.FullMethod() != "/service.User/RegisterUser"
 }

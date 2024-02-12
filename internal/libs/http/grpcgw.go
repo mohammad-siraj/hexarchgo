@@ -33,13 +33,14 @@ type GrpcOptions struct {
 	logger interface {
 		GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
 	}
+	authMiddleware grpc.UnaryServerInterceptor
 }
 
-func NewGrpcGw(opts GrpcOptions, authMiddleware grpc.UnaryServerInterceptor) (IgrpcGw, error) {
+func NewGrpcGw(opts *GrpcOptions) (IgrpcGw, error) {
 	server := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			opts.logger.GetGrpcUnaryInterceptor(),
-			authMiddleware,
+			opts.authMiddleware,
 		),
 	)
 	gwmux := runtime.NewServeMux()
@@ -47,6 +48,13 @@ func NewGrpcGw(opts GrpcOptions, authMiddleware grpc.UnaryServerInterceptor) (Ig
 		server: server,
 		mux:    gwmux,
 	}, nil
+}
+
+func NewGrpcOptions(logger loggerInterface, authMiddleware grpc.UnaryServerInterceptor) *GrpcOptions {
+	return &GrpcOptions{
+		authMiddleware: authMiddleware,
+		logger:         logger,
+	}
 }
 
 func (g *grpcGw) ServerPort(serve net.Listener) {

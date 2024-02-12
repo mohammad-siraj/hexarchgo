@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net"
 
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
 	"github.com/mohammad-siraj/hexarchgo/internal/ports"
 )
 
@@ -34,7 +33,7 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	loggerInstance := logger.NewLogger(loggerConfig)
 	loggerInstance.Info(ctx, "Starting server ...\n")
 
-	serverHttp, err := httpServer.NewHttpServer(isGrpcEnabled, loggerInstance, loggerInstance.GetIoWriter())
+	serverHttp, err := httpServer.NewHttpServer(loggerInstance.GetIoWriter(), httpServer.NewGrpcOptions(loggerInstance, middleware.GrpcAuthMiddleware(ctx)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,37 +41,16 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	porter := ports.NewPorter(serverHttp, loggerInstance)
 	if isGrpcEnabled {
-		SetUpGrpcGateWay(ctx, serverHttp, loggerInstance, GRPCServerPort)
+		porter.SetUpGrpcGateWay(ctx, GRPCServerPort)
 	}
 
-	ports.RegisterRequestHandlers(serverHttp, loggerInstance)
+	porter.RegisterRequestHandlers()
 
 	err = serverHttp.Run(HTTPServerPort)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func SetUpGrpcGateWay(ctx context.Context, serverHttp httpServer.IHttpClient, loggerInstance logger.ILogger, GRPCServerPort string) {
-	ports.RegisterServicesToGrpcServer(serverHttp, loggerInstance)
-	grpcServer := serverHttp.GetGrpcServerInstanceForRegister()
-	lis, err := net.Listen("tcp", GRPCServerPort)
-	if err != nil {
-		log.Fatal(err)
-	}
-	GRPCServerPortIp := fmt.Sprintf("0.0.0.0%s", GRPCServerPort)
-	go grpcServer.ServerPort(lis)
-	if err := grpcServer.ConnectClient(GRPCServerPortIp); err != nil {
-		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
-		return
-	}
-	if err := ports.RegisterServiceHandlersToGrpcServer(ctx, grpcServer); err != nil {
-		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
-		return
-	}
-	if err := grpcServer.StartGrpcServer(ctx, serverHttp); err != nil {
-		loggerInstance.Error(context.Background(), "Failed to connect client with gRPC")
-		return
 	}
 }

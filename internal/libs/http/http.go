@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
 	"google.golang.org/grpc"
 )
 
@@ -41,16 +40,17 @@ type IHttpClient interface {
 	GetGrpcServerInstanceForRegister() IgrpcGw
 }
 
-func NewHttpServer(isGrpcEnabled bool, logger interface {
+type loggerInterface interface {
 	GetGrpcUnaryInterceptor() grpc.UnaryServerInterceptor
-}, ioWriter io.Writer) (IHttpClient, error) {
+	GetIoWriter() io.Writer
+}
+
+func NewHttpServer(ioWriter io.Writer, grpcOptions *GrpcOptions) (IHttpClient, error) {
 	client := &httpClient{
 		engine: gin.New(),
 	}
-	if isGrpcEnabled {
-		grpcConnection, err := NewGrpcGw(GrpcOptions{
-			logger: logger,
-		}, middleware.GrpcAuthMiddleware(context.Background()))
+	if grpcOptions != nil {
+		grpcConnection, err := NewGrpcGw(grpcOptions)
 		if err != nil {
 			return nil, err
 		}
