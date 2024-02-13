@@ -1,11 +1,19 @@
-package database
+package sql
 
 import (
 	"context"
 	"database/sql"
-
-	dbInterface "github.com/mohammad-siraj/hexarchgo/internal/libs/database"
 )
+
+type ISqlDatabase interface {
+	ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error)
+}
+
+type ISqlTransaction interface {
+	ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error)
+	Commit() error
+	RollBack() error
+}
 
 type database struct {
 	conn *sql.DB
@@ -15,7 +23,7 @@ type transaction struct {
 	txn *sql.Tx
 }
 
-func NewDatabase(connectionString string) (dbInterface.IDatabase, error) {
+func NewDatabase(connectionString string) (ISqlDatabase, error) {
 	conn, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
@@ -45,7 +53,7 @@ func (d *database) ExecWithContext(ctx context.Context, queryString string, opt 
 	return "OK", nil
 }
 
-func (d *database) Transaction(ctx context.Context) (dbInterface.ITransaction, error) {
+func (d *database) Transaction(ctx context.Context) (ISqlTransaction, error) {
 	tx, err := d.conn.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err

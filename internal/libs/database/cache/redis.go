@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	dbInterface "github.com/mohammad-siraj/hexarchgo/internal/libs/database"
 	"github.com/redis/go-redis/v9"
@@ -14,7 +15,14 @@ type redisClient struct {
 	client *redis.Client
 }
 
-func NewCacheClient(address, password string, db int) dbInterface.IDatabase {
+type ICacheClient interface {
+	dbInterface.IDatabase
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
+	Del(ctx context.Context, keys ...string) error
+}
+
+func NewCacheClient(address, password string, db int) ICacheClient {
 	return &redisClient{
 		client: redis.NewClient(&redis.Options{
 			Addr:     address,
@@ -64,4 +72,28 @@ func (r *redisClient) queryStringParser(ctx context.Context, queryString string)
 		}
 	}
 	return "", nil
+}
+
+func (r *redisClient) Set(ctx context.Context, key string, value interface{}, timeOut time.Duration) error {
+	err := r.client.Set(context.Background(), key, value, timeOut).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *redisClient) Get(ctx context.Context, key string) (string, error) {
+	result := r.client.Get(context.Background(), key)
+	if result.Err() != nil {
+		return "", result.Err()
+	}
+	return result.Val(), nil
+}
+
+func (r *redisClient) Del(ctx context.Context, keys ...string) error {
+	result := r.client.Del(context.Background(), keys...)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	return nil
 }
