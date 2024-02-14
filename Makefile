@@ -12,9 +12,36 @@ generate-protos: $(PROTODIR)/*
 		done
 
 deploy-docker:
-		@echo "Deploying docker image...";\
-		cd infrastructure/docker && docker-compose up -d;
+	@echo "Deploying docker image...";\
+	cd infrastructure/docker && docker-compose up -d;
 
 down-docker:
-		@echo "bringing down docker images...";\
-		cd infrastructure/docker && docker-compose down;
+	@echo "bringing down docker images...";\
+	cd infrastructure/docker && docker-compose down;\
+	echo "docker image down Successfully";
+
+sql-migarte:
+	@echo "Migrating sql database...";\
+	migrate create -ext sql -dir data/database/migration/ -seq sqlmigrations;\
+	@echo "Migrate sql database completed!";\
+
+migrate-up:
+	@echo "Running migrate up...";\
+	migrate -path data/database/migration/ -database "postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable" -verbose up;\
+	@echo "Successfully migrate database schema";\
+
+migrate-down:
+	@echo "Running migrate up...";\
+	migrate -path data/database/migration/ -database "postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable" -verbose down;\
+	echo "Successfully migrate database schema";\
+
+
+start-server:
+	go mod tidy;\
+	make deploy-docker;\
+	sleep 5s;\
+	make migrate-up;\
+	go run cmd/main.go;\
+
+stop-server:
+	make down-docker;

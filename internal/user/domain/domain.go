@@ -15,7 +15,7 @@ import (
 )
 
 type IUserDomain interface {
-	SendBackToken(ctx context.Context, token string) error
+	SendBackToken(ctx context.Context) error
 }
 
 type UserDomain struct {
@@ -32,7 +32,7 @@ func NewUserDomain(log logger.ILogger, cache cache.ICacheClient, sqlDb sqlDb.ISq
 	}
 }
 
-func (u *UserDomain) SendBackToken(ctx context.Context, token string) error {
+func (u *UserDomain) SendBackToken(ctx context.Context) error {
 	u.log.Info(ctx, "Request received", logger.NewLogFieldInput("methodName", "SendBackToken"))
 	token, err := middleware.CreateToken("user")
 	if err != nil {

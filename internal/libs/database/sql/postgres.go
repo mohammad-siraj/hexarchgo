@@ -3,6 +3,8 @@ package sql
 import (
 	"context"
 	"database/sql"
+
+	_ "github.com/lib/pq"
 )
 
 type ISqlDatabase interface {

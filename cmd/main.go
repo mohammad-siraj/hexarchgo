@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/sql"
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
@@ -34,25 +35,25 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	loggerInstance := logger.NewLogger(loggerConfig)
 	loggerInstance.Info(ctx, "Starting server ...\n")
 
+	//Http client
 	serverHttp, err := httpServer.NewHttpServer(loggerInstance.GetIoWriter(), httpServer.NewGrpcOptions(loggerInstance, middleware.GrpcAuthMiddleware(ctx)))
 	if err != nil {
-		log.Fatal(err)
+		loggerInstance.Error(ctx, err.Error())
 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	//cache client
 	cacheClient := cache.NewCacheClient("localhost:6379", "", 1)
-	if _, err := cacheClient.ExecWithContext(context.Background(), `SET testkey test-value`); err != nil {
-		loggerInstance.Error(ctx, err.Error())
+
+	//sql database client
+	sqlClient, err := sql.NewDatabase("postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable")
+	if err != nil {
+		loggerInstance.Error(ctx, "error while initiating sql client "+err.Error())
 	}
 
-	value, err := cacheClient.ExecWithContext(context.Background(), `GET testkey`)
+	_, err = sqlClient.ExecWithContext(ctx, "INSERT INTO users (id, username,email,password,created_at) VALUES ('1', 'John Doe','John Doe','John Doe','2024-02-14T18:27:58+00:00')")
 	if err != nil {
-		loggerInstance.Error(ctx, err.Error())
+		loggerInstance.Error(ctx, "error while initiating sql client "+err.Error())
 	}
-	loggerInstance.Info(ctx, value)
 
 	porter := ports.NewPorter(serverHttp, loggerInstance, cacheClient)
 	if isGrpcEnabled {
