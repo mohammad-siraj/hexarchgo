@@ -2,19 +2,16 @@ package domain
 
 import (
 	"context"
-	"os"
+
 	"time"
 
+	"github.com/mohammad-siraj/hexarchgo/internal/common"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	sqlDb "github.com/mohammad-siraj/hexarchgo/internal/libs/database/sql"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-)
-
-var (
-	userLoginTime = os.Getenv("USER_LOGIN_TIME") //nolint: gosec
 )
 
 type IUserDomain interface {
@@ -41,7 +38,13 @@ func (u *UserDomain) SendBackToken(ctx context.Context, token string) error {
 	if err != nil {
 		return err
 	}
-	if err := u.cache.Set(ctx, token, "value", 1000*time.Millisecond); err != nil {
+	userLoginTimeout, err := time.ParseDuration(common.UserLoginTimeOut)
+	if err != nil {
+		u.log.Error(ctx, "login time not parsable "+err.Error())
+		return err
+	}
+
+	if err := u.cache.Set(ctx, token, "value", userLoginTimeout); err != nil {
 		u.log.Error(ctx, err.Error())
 		return err
 	}
