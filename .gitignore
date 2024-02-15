@@ -2,3 +2,4 @@
 *.log
 log/
 data/secret/
+node_modules/

@@ -35,6 +35,11 @@ migrate-down:
 	migrate -path data/database/migration/ -database "postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable" -verbose down;\
 	echo "Successfully migrate database schema";\
 
+bundle-openapi:
+	touch api/openapi.yaml;\
+	for file in $^ ; do \
+		redocly join openapi.yaml ./$$file/driving/adapters/proto/service/*.yaml -o api/openapi.yaml
+	done
 
 start-server:
 	go mod tidy;\
