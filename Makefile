@@ -47,6 +47,8 @@ start-server:
 	sleep 5s;\
 	make migrate-up;\
 	go run cmd/main.go;\
+	make down-docker;\
 
 stop-server:
-	make down-docker;
+	make down-docker;\
+	docker volume prune -a;\

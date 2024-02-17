@@ -1,0 +1,18 @@
+data_dir : "/var/lib/vector"
+# Configuration for the sources, transforms, and sinks
+sources:
+  # Define a JSON source to read logs from a .log file
+  debug:
+    type: docker_logs
+    # format:
+    #   type: "json"
+
+sinks:
+  # Define a Prometheus Pushgateway sink
+  prometheus_sink:
+    type: "elasticsearch"
+    endpoints: "0.0.0.0:9000"  # Replace with the actual address of your Prometheus Pushgateway
+    #job: "my-job"  # Replace with your job name
+    inputs: ["debug"]  # Add the transform as input to the sink
+
+# Define the pipelines to connect sources, transforms, and sinks

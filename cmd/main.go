@@ -62,6 +62,29 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 
 	porter.RegisterRequestHandlers()
 
+	//event handler test
+	// BrokerConfig := make([]string, 0)
+	// BrokerConfig = append(BrokerConfig, "0.0.0.0:9092")
+	// //var Offset int64 = -1
+	// topic := "test_topic"
+	// eventbroker, err := eventbroker.NewEventBroker(BrokerConfig)
+	// if err != nil {
+	// 	loggerInstance.Error(ctx, "error while initiating event broker client "+err.Error())
+	// }
+	// partition, offset, err := eventbroker.SyncSendMessageToTopic("hello there siraj\n", topic, false)
+	// if err != nil {
+	// 	loggerInstance.Error(ctx, "error while send message to topic client "+err.Error())
+	// }
+	// ch, err := eventbroker.ConsumeTopic(topic, 0)
+	// if err != nil {
+	// 	loggerInstance.Error(ctx, "error while consumer initialization client "+err.Error())
+	// }
+	// go func() {
+	// 	for msg := range ch {
+	// 		fmt.Println("The value is here ", msg)
+	// 		loggerInstance.Info(ctx, "value is "+msg)
+	// 	}
+	// }()
 	err = serverHttp.Run(HTTPServerPort)
 	if err != nil {
 		log.Fatal(err)
