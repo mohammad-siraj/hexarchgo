@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      LS_LOG: trace
+    ports:
+      - 4566:4566
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

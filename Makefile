@@ -52,3 +52,8 @@ start-server:
 stop-server:
 	make down-docker;\
 	docker volume prune -a;\
+
+
+terraform:
+	@tflocal -chdir=infra/terraform init
+	@tflocal -chdir=infra/terraform apply --auto-approve
