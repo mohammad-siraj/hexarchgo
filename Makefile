@@ -55,5 +55,38 @@ stop-server:
 
 
 terraform:
-	@tflocal -chdir=infra/terraform init
-	@tflocal -chdir=infra/terraform apply --auto-approve
+	@tflocal -chdir=infrastructure/cloud/terraform init
+	@tflocal -chdir=infrastructure/cloud/terraform apply --auto-approve
+
+localstack:
+	@ cd infrastructure/cloud  && docker compose up -d && cd ../..
+
+localstack-down:
+	@ cd infrastructure/cloud  && docker compose down && cd ../..
+
+
+zip:
+	@CGO_ENABLED=0 GOOS=linux  go build -ldflags="-d -s -w" -o app ./cmd/serverless/main.go
+	@chmod 777 app 
+	@zip infrastructure/cloud/terraform/app.zip app
+	@chmod 777 infrastructure/cloud/terraform/app.zip
+	@rm app
+
+start-lambda:
+	@make localstack
+	#@make zip
+	@echo Its here
+	@make terraform
+	#@make localstack-down
+
+test-invoke-lambda:
+	@bash ./infrastructure/cloud/invokelambda.sh
+
+
+build-zip:
+	#dep ensure -v
+	env GOOS=linux go build -ldflags="-d -s -w" -o app ./cmd/serverless/main.go
+	@chmod 777 app 
+	build-lambda-zip -o infrastructure/cloud/terraform/app.zip app
+	@chmod 777 infrastructure/cloud/terraform/app.zip
+	@rm app

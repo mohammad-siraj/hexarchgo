@@ -3,3 +3,4 @@
 log/
 data/secret/
 node_modules/
+infrastructure/cloud/terraform/

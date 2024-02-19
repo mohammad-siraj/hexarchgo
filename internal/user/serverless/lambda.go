@@ -7,10 +7,11 @@ import (
 	user "github.com/mohammad-siraj/hexarchgo/internal/user/driving/adapters/proto/service"
 )
 
-func HandlerUserCreation(ctx context.Context, userRegister *user.UserRegisterRequest) (*string, error) {
+func HandlerUserCreation(ctx context.Context, userRegister *user.UserRegisterRequest) (string, error) {
 	if userRegister == nil {
-		return nil, fmt.Errorf("received nil event")
+		return "", fmt.Errorf("received nil event")
 	}
+	fmt.Println("Is invoked successfully")
 	message := fmt.Sprintf("Hello %s!", userRegister.Name)
-	return &message, nil
+	return message, nil
 }
