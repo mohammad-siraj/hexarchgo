@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/mohammad-siraj/hexarchgo/internal/graceshutdown"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/sql"
 	httpServer "github.com/mohammad-siraj/hexarchgo/internal/libs/http"
@@ -61,6 +62,12 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	}
 
 	porter.RegisterRequestHandlers()
+
+	errChannel := make(chan error, 1)
+
+	gracefulshutdownHandler := graceshutdown.NewGracefulShutDownHandler(errChannel, loggerInstance)
+	go gracefulshutdownHandler.ErrorHandler(loggerInstance)
+	go gracefulshutdownHandler.InterruptShutdown(ctx, loggerInstance, serverHttp, cacheClient, sqlClient)
 
 	//event handler test
 	// BrokerConfig := make([]string, 0)

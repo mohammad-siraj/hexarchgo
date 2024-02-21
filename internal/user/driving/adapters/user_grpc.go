@@ -4,7 +4,7 @@ import (
 	"context"
 
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
-	"github.com/mohammad-siraj/hexarchgo/internal/libs/database"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/middleware"
@@ -16,11 +16,11 @@ import (
 type UserHandler struct {
 	server http.IHttpClient
 	log    logger.ILogger
-	cache  database.IDatabase
+	cache  cache.ICacheClient
 	user.UnimplementedUserServer
 }
 
-func NewUserHandler(h http.IHttpClient, l logger.ILogger, cacheClient database.IDatabase) *UserHandler {
+func NewUserHandler(h http.IHttpClient, l logger.ILogger, cacheClient cache.ICacheClient) *UserHandler {
 	return &UserHandler{
 		server: h,
 		log:    l,
@@ -39,13 +39,23 @@ func (u *UserHandler) RegisterUser(ctx context.Context, in *user.UserRegisterReq
 			UserId: "",
 		}, nil
 	}
-	if _, err := u.cache.ExecWithContext(ctx, "SET "+in.Email+" "+token+"-"+in.Password); err != nil {
+	if err := u.cache.Set(ctx, in.Email, token+"-"+in.Password, 0); err != nil {
 		u.log.Error(ctx, err.Error())
 		return &user.UserRegisterReponse{
 			Status: "FAILED",
 			UserId: "",
 		}, nil
 	}
+
+	value, err := u.cache.Get(ctx, in.Email)
+	if err != nil {
+		u.log.Error(ctx, err.Error())
+		return &user.UserRegisterReponse{
+			Status: "FAILED",
+			UserId: "",
+		}, nil
+	}
+	u.log.Info(ctx, "Value in redis cache "+value)
 	header := metadata.New(map[string]string{"authentication": token})
 	if err := grpc.SendHeader(ctx, header); err != nil {
 		return nil, err

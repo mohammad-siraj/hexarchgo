@@ -18,6 +18,7 @@ deploy-docker:
 down-docker:
 	@echo "bringing down docker images...";\
 	cd infrastructure/docker && docker-compose down;\
+	docker volume prune;\
 	echo "docker image down Successfully";
 
 sql-migarte:

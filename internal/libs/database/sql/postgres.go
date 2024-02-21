@@ -9,6 +9,7 @@ import (
 
 type ISqlDatabase interface {
 	ExecWithContext(ctx context.Context, queryString string, opt ...interface{}) (string, error)
+	Exit(ctx context.Context, errChannel chan error)
 }
 
 type ISqlTransaction interface {
@@ -53,6 +54,12 @@ func (d *database) ExecWithContext(ctx context.Context, queryString string, opt 
 		return "", err
 	}
 	return "OK", nil
+}
+
+func (d *database) Exit(ctx context.Context, errChannel chan error) {
+	if err := d.conn.Close(); err != nil {
+		errChannel <- err
+	}
 }
 
 func (d *database) Transaction(ctx context.Context) (ISqlTransaction, error) {

@@ -20,6 +20,7 @@ type ICacheClient interface {
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 	Del(ctx context.Context, keys ...string) error
+	Exit(ctx context.Context, errChannel chan error)
 }
 
 func NewCacheClient(address, password string, db int) ICacheClient {
@@ -96,4 +97,10 @@ func (r *redisClient) Del(ctx context.Context, keys ...string) error {
 		return result.Err()
 	}
 	return nil
+}
+
+func (r *redisClient) Exit(ctx context.Context, errChannel chan error) {
+	if err := r.client.Shutdown(ctx); err.Err() != nil {
+		errChannel <- err.Err()
+	}
 }

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/mohammad-siraj/hexarchgo/internal/libs/database"
+	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/http"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 	user "github.com/mohammad-siraj/hexarchgo/internal/user/driving/adapters"
@@ -22,10 +22,10 @@ type IPorter interface {
 type porter struct {
 	server      http.IHttpClient
 	log         logger.ILogger
-	cacheClient database.IDatabase
+	cacheClient cache.ICacheClient
 }
 
-func NewPorter(h http.IHttpClient, l logger.ILogger, cacheClient database.IDatabase) IPorter {
+func NewPorter(h http.IHttpClient, l logger.ILogger, cacheClient cache.ICacheClient) IPorter {
 	return &porter{
 		server:      h,
 		log:         l,

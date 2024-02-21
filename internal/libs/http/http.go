@@ -21,6 +21,7 @@ func (HandlerFunc) ServeHTTP(http.ResponseWriter, *http.Request) {
 type httpClient struct {
 	engine *gin.Engine
 	grpc   IgrpcGw
+	srv    *http.Server
 }
 
 type subGroup struct {
@@ -38,6 +39,7 @@ type IHttpClient interface {
 	Any(relativePath string, handlerFunction ...gin.HandlerFunc)
 	Use(handlerFunction ...http.HandlerFunc)
 	GetGrpcServerInstanceForRegister() IgrpcGw
+	Exit(ctx context.Context, errChannel chan error)
 }
 
 type loggerInterface interface {
@@ -106,10 +108,18 @@ func (h *httpClient) NewSubGroup(path string, handleFunctions ...http.HandlerFun
 }
 
 func (h *httpClient) Run(ConnString string) error {
+	srv := &http.Server{
+		Addr:    ConnString,
+		Handler: h.engine,
+	}
+
+	h.srv = srv
+
 	err := h.engine.Run(ConnString)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -237,4 +247,14 @@ func (h *subGroup) Any(relativePath string, handlerFunction ...gin.HandlerFunc) 
 func (h *subGroup) Run(ConnString string) error {
 	err := errors.New("unimplemented")
 	return err
+}
+
+func (h *httpClient) Exit(ctx context.Context, errChannel chan error) {
+	if err := h.srv.Shutdown(ctx); err != nil {
+		errChannel <- err
+	}
+}
+
+func (h *subGroup) Exit(ctx context.Context, errChannel chan error) {
+	return
 }

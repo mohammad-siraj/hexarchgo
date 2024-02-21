@@ -45,7 +45,7 @@ func (u *UserDomain) SendBackToken(ctx context.Context) error {
 	}
 
 	if err := u.cache.Set(ctx, token, "value", userLoginTimeout); err != nil {
-		u.log.Error(ctx, err.Error())
+		u.log.Error(ctx, "Error in setting redis key "+err.Error())
 		return err
 	}
 	header := metadata.New(map[string]string{"authentication": token})
