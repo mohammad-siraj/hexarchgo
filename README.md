@@ -94,8 +94,6 @@ This project implements a web-based API for a task management system using GoLan
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Configuration](#configuration)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Acknowledgments](#acknowledgments)
@@ -132,10 +130,9 @@ To get started with this project:
 
 - Grpc gateway implemenation
 - Swagger UI implemenation
-- 
 - No Sql Database integartion with utils
 - Dockerfile for containerization
-- CI/CD pipeline setup (Github Actions, Gitlab CI or Jenkins?)
+
 - Codecov integration
 - JWT Authentication
 - Rate Limiting
@@ -145,3 +142,5 @@ To get started with this project:
 - Cloud Provider Integrations (AWS, GCP)
 - Distributed Tracing Tools (Zipkin, Jaeger)
 - Retry Mechanism Implementation
+
+- CI/CD pipeline setup (Github Actions, Gitlab CI or Jenkins?)
