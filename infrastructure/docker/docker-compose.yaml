@@ -9,10 +9,8 @@ services:
       - "6379:6379"
     volumes:
       - /.:/root/redis
-      #- /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_PORT=6379
-      - REDIS_DATABASES=16
   
   postgres:
     container_name: sql-server

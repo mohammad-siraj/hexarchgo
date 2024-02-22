@@ -37,7 +37,7 @@ func (g *gracefulshutdown) InterruptShutdown(ctx context.Context, log logger.ILo
 	<-g.interuptChannel
 	g.log.Info(ctx, "Application received interrupt signal")
 	for _, resource := range opts {
-		log.Info(ctx, "Resource exit is happening")
+		log.Info(ctx, "Resource exit is happening ")
 		resource.Exit(ctx, g.errChannel)
 	}
 	os.Exit(0)

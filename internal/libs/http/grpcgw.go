@@ -21,6 +21,7 @@ type IgrpcGw interface {
 	StartGrpcServer(ctx context.Context, server IHttpClient) error
 	ServerPort(serve net.Listener)
 	ConnectClient(clientConnectionString string) error
+	Exit(ctx context.Context, errChannel chan error)
 }
 
 type grpcGw struct {
@@ -111,4 +112,12 @@ func (g *grpcGw) ConnectClient(clientConnectionString string) error {
 	}
 	g.client = conn
 	return nil
+}
+
+func (g *grpcGw) Exit(ctx context.Context, errChannel chan error) {
+	g.server.GracefulStop()
+	err := g.client.Close()
+	if err != nil {
+		errChannel <- err
+	}
 }

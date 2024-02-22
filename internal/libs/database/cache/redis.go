@@ -100,7 +100,7 @@ func (r *redisClient) Del(ctx context.Context, keys ...string) error {
 }
 
 func (r *redisClient) Exit(ctx context.Context, errChannel chan error) {
-	if err := r.client.Shutdown(ctx); err.Err() != nil {
-		errChannel <- err.Err()
+	if err := r.client.Conn().Close(); err != nil {
+		errChannel <- err
 	}
 }

@@ -253,6 +253,7 @@ func (h *httpClient) Exit(ctx context.Context, errChannel chan error) {
 	if err := h.srv.Shutdown(ctx); err != nil {
 		errChannel <- err
 	}
+	h.grpc.Exit(ctx, errChannel)
 }
 
 func (h *subGroup) Exit(ctx context.Context, errChannel chan error) {

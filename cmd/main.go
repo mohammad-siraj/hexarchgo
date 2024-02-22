@@ -43,7 +43,7 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	}
 
 	//cache client
-	cacheClient := cache.NewCacheClient("localhost:6379", "", 1)
+	cacheClient := cache.NewCacheClient("localhost:6379", "", 0)
 
 	//sql database client
 	sqlClient, err := sql.NewDatabase("postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable")
