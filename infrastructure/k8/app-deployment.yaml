@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: app
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: app
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/docker-app-net: "true"
+        io.kompose.service: app
+    spec:
+      containers:
+        - image: modelapp
+          name: modelapp
+          ports:
+            - containerPort: 8081
+              hostPort: 8081
+              protocol: TCP
+            - containerPort: 8090
+              hostPort: 8090
+              protocol: TCP
+      restartPolicy: Always
