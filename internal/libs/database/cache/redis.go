@@ -84,7 +84,7 @@ func (r *redisClient) Set(ctx context.Context, key string, value interface{}, ti
 }
 
 func (r *redisClient) Get(ctx context.Context, key string) (string, error) {
-	result := r.client.Get(context.Background(), key)
+	result := r.client.Get(ctx, key)
 	if result.Err() != nil {
 		return "", result.Err()
 	}

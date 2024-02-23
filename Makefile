@@ -12,8 +12,14 @@ generate-protos: $(PROTODIR)/*
 		done
 
 deploy-docker:
+	@echo "Building image";\
+	CGO_ENABLED=0 GOOS=linux go build -o app cmd/main.go;\
+	chmod 777 app;\
+	sudo docker build . -f Dockerfile -t modelapp;\
 	@echo "Deploying docker image...";\
-	cd infrastructure/docker && docker-compose up -d;
+	cd infrastructure/docker && docker-compose up -d;\
+	docker image prune;\
+	rm app;
 
 down-docker:
 	@echo "bringing down docker images...";\

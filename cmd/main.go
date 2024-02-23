@@ -13,16 +13,21 @@ import (
 	"github.com/mohammad-siraj/hexarchgo/internal/ports"
 )
 
+const (
+	HTTPServerPort           = ":8090"
+	GRPCServerPort           = ":8081"
+	PostgresConnectionString = "postgresql://postgres:postgres@sql-server:5432/mainserver?sslmode=disable"
+	isGrpcEnabled            = true
+)
+
 func main() {
-	HTTPServerPort := ":8090"
-	GRPCServerPort := ":8081"
-	isGrpcEnabled := true
+
 	ctx := context.Background()
-	StartServer(ctx, isGrpcEnabled, GRPCServerPort, HTTPServerPort)
+	StartServer(ctx)
 
 }
 
-func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string, HTTPServerPort string) {
+func StartServer(ctx context.Context) {
 	loggerConfig := logger.NewlogConfigOptions(false)
 
 	//logger configs
@@ -43,25 +48,16 @@ func StartServer(ctx context.Context, isGrpcEnabled bool, GRPCServerPort string,
 	}
 
 	//cache client
-	cacheClient := cache.NewCacheClient("localhost:6379", "", 0)
+	cacheClient := cache.NewCacheClient("cache-server:6379", "", 0)
 
 	//sql database client
-	sqlClient, err := sql.NewDatabase("postgresql://postgres:postgres@localhost:5432/mainserver?sslmode=disable")
+	sqlClient, err := sql.NewDatabase(PostgresConnectionString)
 	if err != nil {
 		loggerInstance.Error(ctx, "error while initiating sql client "+err.Error())
 	}
 
-	_, err = sqlClient.ExecWithContext(ctx, "INSERT INTO users (id, username,email,password,created_at) VALUES ('1', 'John Doe','John Doe','John Doe','2024-02-14T18:27:58+00:00')")
-	if err != nil {
-		loggerInstance.Error(ctx, "error while initiating sql client "+err.Error())
-	}
-
-	porter := ports.NewPorter(serverHttp, loggerInstance, cacheClient)
-	if isGrpcEnabled {
-		porter.SetUpGrpcGateWay(ctx, GRPCServerPort)
-	}
-
-	porter.RegisterRequestHandlers()
+	porter := ports.NewPorter(serverHttp, loggerInstance, cacheClient, sqlClient, GRPCServerPort)
+	porter.RegisterRequestHandlers(ctx, isGrpcEnabled)
 
 	errChannel := make(chan error, 1)
 

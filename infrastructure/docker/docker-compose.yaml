@@ -11,6 +11,8 @@ services:
       - /.:/root/redis
     environment:
       - REDIS_PORT=6379
+    networks:
+      - app-net
   
   postgres:
     container_name: sql-server
@@ -20,10 +22,13 @@ services:
     volumes:
       - /.:/root/postgres
       - postgres_data:/var/lib/postgresql/data/
+      - ~/main.sql:/docker-entrypoint-initdb.d/main.sql
     environment:
       - POSTGRES_DB=mainserver
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
+    networks:
+      - app-net
 
   zookeeper:
     container_name: zookeeper
@@ -32,8 +37,10 @@ services:
       - '2181:2181'
     networks:
       - kafka-net
+      - app-net
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+
   kafka:
     image: 'bitnami/kafka:latest'
     container_name: kafka
@@ -41,6 +48,7 @@ services:
       - '9092:9092'
     networks:
       - kafka-net
+      - app-net
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
@@ -50,10 +58,21 @@ services:
       - KAFKA_CFG_LOG_RETENTION_HOURS=6
     depends_on:
       - zookeeper
+      
+  app:
+    image: 'modelapp'
+    container_name: modelapp
+    ports:
+     - 8081:8081
+     - 8090:8090
+    networks:
+      - app-net
 
 volumes:
   postgres_data:
 
 networks:
   kafka-net:
+    driver: bridge
+  app-net:
     driver: bridge
