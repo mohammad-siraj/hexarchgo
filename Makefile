@@ -11,11 +11,14 @@ generate-protos: $(PROTODIR)/*
 			./$$file/driving/adapters/proto/service/*.proto; \
 		done
 
-deploy-docker:
+build-appimage:
 	@echo "Building image";\
 	CGO_ENABLED=0 GOOS=linux go build -o app cmd/main.go;\
 	chmod 777 app;\
-	sudo docker build . -f Dockerfile -t modelapp;\
+	sudo docker build . -t modelapp;\
+
+deploy-docker:
+	make build-appimage;\
 	@echo "Deploying docker image...";\
 	cd infrastructure/docker && docker-compose up -d;\
 	docker image prune;\
@@ -88,6 +91,24 @@ start-lambda:
 
 test-invoke-lambda:
 	@bash ./infrastructure/cloud/invokelambda.sh
+
+
+#for minikube users use minikube service --url to get the url to acces the app
+deploy-k8:
+	@make build-appimage;\
+	minikube start;\
+	docker save modelapp:latest -o modelapp.tar;\
+	chmod 777 modelapp.tar;\
+	docker cp modelapp.tar minikube:/var;\
+	docker exec -it minikube docker load -i /var/modelapp.tar;\
+	cd infrastructure;\
+	kubectl apply -f k8;\
+
+
+down-k8:
+	@cd infrastructure;\
+	kubectl delete -f k8;\
+	minikube stop;\
 
 
 build-zip:

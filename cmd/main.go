@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	HTTPServerPort           = ":8090"
-	GRPCServerPort           = ":8081"
-	PostgresConnectionString = "postgresql://postgres:postgres@sql-server:5432/mainserver?sslmode=disable"
-	isGrpcEnabled            = true
+	HTTPServerPort              = ":8090"
+	GRPCServerPort              = ":8081"
+	PostgresConnectionString    = "postgresql://postgres:postgres@postgres:5432/mainserver?sslmode=disable"
+	cacheClientConnectionString = "redis:6379"
+	isGrpcEnabled               = true
 )
 
 func main() {
@@ -48,7 +49,7 @@ func StartServer(ctx context.Context) {
 	}
 
 	//cache client
-	cacheClient := cache.NewCacheClient("cache-server:6379", "", 0)
+	cacheClient := cache.NewCacheClient(cacheClientConnectionString, "", 0)
 
 	//sql database client
 	sqlClient, err := sql.NewDatabase(PostgresConnectionString)

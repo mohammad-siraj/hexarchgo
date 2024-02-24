@@ -22,7 +22,8 @@ spec:
         io.kompose.service: app
     spec:
       containers:
-        - image: modelapp
+        - image: modelapp:latest
+          imagePullPolicy: IfNotPresent
           name: modelapp
           ports:
             - containerPort: 8081
@@ -31,4 +32,5 @@ spec:
             - containerPort: 8090
               hostPort: 8090
               protocol: TCP
+          
       restartPolicy: Always
