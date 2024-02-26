@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/logger"
 )
@@ -23,7 +24,7 @@ type gracefulshutdown struct {
 
 func NewGracefulShutDownHandler(errChannel chan error, loggerInstance logger.ILogger) IGracefulShutdown {
 	interuptChannel := make(chan os.Signal, 1)
-	signal.Notify(interuptChannel, os.Interrupt)
+	signal.Notify(interuptChannel, os.Interrupt, os.Kill) // Push signals into the interrupt
 	return &gracefulshutdown{
 		errChannel:      errChannel,
 		interuptChannel: interuptChannel,
@@ -38,6 +39,7 @@ func (g *gracefulshutdown) InterruptShutdown(ctx context.Context, log logger.ILo
 	g.log.Info(ctx, "Application received interrupt signal")
 	for _, resource := range opts {
 		log.Info(ctx, "Resource exit is happening ")
+		time.Sleep(10 * time.Second)
 		resource.Exit(ctx, g.errChannel)
 	}
 	os.Exit(0)
