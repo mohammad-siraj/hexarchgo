@@ -53,11 +53,12 @@ bundle-openapi:
 
 start-server:
 	go mod tidy;\
-	make deploy-docker;\
-	sleep 5s;\
-	make migrate-up;\
-	go run cmd/main.go;\
-	make down-docker;\
+	make deploy-docker;
+
+#sleep 5s;\
+	#make migrate-up;\
+	#go run cmd/main.go;\
+	#make down-docker;\
 
 stop-server:
 	make down-docker;\

@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/mohammad-siraj/hexarchgo/internal/graceshutdown"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/cache"
 	"github.com/mohammad-siraj/hexarchgo/internal/libs/database/sql"
@@ -13,13 +15,26 @@ import (
 	"github.com/mohammad-siraj/hexarchgo/internal/ports"
 )
 
-const (
+var (
 	HTTPServerPort              = ":8090"
 	GRPCServerPort              = ":8081"
 	PostgresConnectionString    = "postgresql://postgres:postgres@postgres:5432/mainserver?sslmode=disable"
-	cacheClientConnectionString = "redis:6379"
+	cacheClientConnectionString = "reds:6379"
 	isGrpcEnabled               = true
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	HTTPServerPort = os.Getenv("HTTPSERVERPORT")
+	GRPCServerPort = os.Getenv("GRPCSERVERPORT")
+	PostgresConnectionString = os.Getenv("DATABASECONNECTIONSTRING")
+	cacheClientConnectionString = os.Getenv("CACHESERVERCONNECTIONSTRING")
+	_, isGrpcEnabled = os.LookupEnv("GRPCENABLED")
+}
 
 func main() {
 

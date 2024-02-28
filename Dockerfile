@@ -7,6 +7,7 @@ RUN mkdir log
 RUN mkdir data
 RUN mkdir data/secret
 COPY log .
+COPY .env .
 COPY data/secret/tokensecret data/secret/tokensecret
 
 RUN  chmod 777 app
