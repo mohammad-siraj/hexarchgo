@@ -1,5 +1,5 @@
 # Hexagonal Architecture for go
-A hexagonal Architecture implementation for Go Lang applications 
+A hexagonal Architecture implementation for Go Lang web applications 
 
 ## Understanding Hexagonal Architecture and Its Benefits in GoLang
 
